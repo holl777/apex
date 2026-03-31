@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>APEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #07070f;
+    --surface: #0f0f1c;
+    --border: rgba(0,229,255,0.15);
+    --cyan: #00e5ff;
+    --violet: #8b5cf6;
+    --green: #22c55e;
+    --red: #ef4444;
+    --orange: #f97316;
+    --gold: #eab308;
+    --text: #e2e8f0;
+    --muted: #475569;
+    --head: 'Orbitron', monospace;
+    --body: 'Inter', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); min-height: 100vh; }
+  .hidden { display: none !important; }
+
+  /* AUTH */
+  #auth-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .auth-wrap { width:100%; max-width:380px; }
+  .auth-logo { text-align:center; margin-bottom:32px; }
+  .auth-logo h1 { font-family:var(--head); font-size:2.6rem; font-weight:900; color:var(--cyan); letter-spacing:0.3em; text-shadow:0 0 24px rgba(0,229,255,0.5); }
+  .auth-logo p { color:var(--muted); font-size:0.62rem; letter-spacing:0.2em; margin-top:6px; }
+  .auth-box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; }
+  .auth-tabs { display:flex; gap:8px; margin-bottom:20px; }
+  .auth-tab { flex:1; padding:8px; background:transparent; border:1px solid var(--muted); border-radius:6px; color:var(--muted); cursor:pointer; font-size:0.85rem; transition:all 0.2s; }
+  .auth-tab.on { border-color:var(--cyan); color:var(--cyan); background:rgba(0,229,255,0.08); }
+  .fi { width:100%; padding:11px 14px; margin-bottom:12px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:var(--text); font-size:0.95rem; outline:none; transition:border-color 0.2s; }
+  .fi:focus { border-color:rgba(0,229,255,0.4); }
+  .fi::placeholder { color:var(--muted); }
+  .btn-p { width:100%; padding:12px; margin-bottom:12px; background:rgba(0,229,255,0.1); border:1px solid var(--cyan); border-radius:6px; color:var(--cyan); cursor:pointer; font-family:var(--head); font-size:0.72rem; letter-spacing:0.12em; transition:all 0.2s; }
+  .btn-p:hover { background:rgba(0,229,255,0.18); }
+  .btn-p:disabled { opacity:0.4; cursor:not-allowed; }
+  .btn-g { width:100%; padding:11px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:6px; color:#aaa; cursor:pointer; font-size:0.88rem; display:flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; }
+  .btn-g:hover { background:rgba(255,255,255,0.1); }
+  .divider { display:flex; align-items:center; gap:10px; margin:12px 0; color:var(--muted); font-size:0.75rem; }
+  .divider::before,.divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.08); }
+  .amsg { padding:10px 12px; border-radius:6px; font-size:0.83rem; margin-bottom:12px; }
+  .amsg.err { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; }
+  .amsg.ok  { background:rgba(34,197,94,0.12);  border:1px solid rgba(34,197,94,0.3);  color:#86efac; }
+
+  /* APP */
+  #app-screen { display:none; flex-direction:column; min-height:100vh; }
+  #app-screen.show { display:flex; }
+  .app-hdr { position:sticky; top:0; z-index:100; background:rgba(7,7,15,0.96); backdrop-filter:blur(10px); border-bottom:1px solid var(--border); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; }
+  .hdr-logo { font-family:var(--head); font-size:1rem; color:var(--cyan); letter-spacing:0.2em; }
+  .hdr-r { display:flex; align-items:center; gap:10px; }
+  .hdr-lvl { font-family:var(--head); font-size:0.6rem; }
+  .hdr-xp { font-size:0.75rem; color:var(--cyan); font-weight:600; }
+  .mini-bar { width:70px; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; margin-top:3px; }
+  .mini-fill { height:100%; border-radius:2px; transition:width 0.5s ease; }
+  .av { width:32px; height:32px; border-radius:50%; background:rgba(0,229,255,0.15); border:1px solid rgba(0,229,255,0.3); color:var(--cyan); font-family:var(--head); font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+  /* CONTENT */
+  .content { flex:1; padding:16px; max-width:600px; width:100%; margin:0 auto; padding-bottom:88px; }
+  .tab-panel { display:none; }
+  .tab-panel.on { display:block; }
+
+  /* NAV */
+  .bot-nav { position:fixed; bottom:0; left:0; right:0; z-index:100; background:rgba(7,7,15,0.97); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:8px 0 14px; }
+  .ni { background:none; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 12px; }
+  .ni-ico { font-size:1.15rem; }
+  .ni-lbl { font-family:var(--head); font-size:0.5rem; color:var(--muted); letter-spacing:0.04em; }
+  .ni.on .ni-lbl { color:var(--cyan); }
+  .ni.on .ni-ico { filter:drop-shadow(0 0 6px var(--cyan)); }
+
+  /* CARDS */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; position:relative; overflow:hidden; }
+  .card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(0,229,255,0.5),transparent); }
+  .card.v { border-color:rgba(139,92,246,0.2); }
+  .card.v::after { background:linear-gradient(90deg,transparent,rgba(139,92,246,0.6),transparent); }
+  .ct { font-family:var(--head); font-size:0.65rem; letter-spacing:0.15em; color:var(--cyan); margin-bottom:14px; }
+  .card.v .ct { color:var(--violet); }
+
+  /* STATS */
+  .srow { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px; }
+  .sbox { background:var(--surface); border-radius:8px; padding:12px 8px; text-align:center; border:1px solid rgba(255,255,255,0.06); }
+  .snum { font-family:var(--head); font-size:1.6rem; font-weight:900; display:block; }
+  .slbl { font-size:0.62rem; color:var(--muted); margin-top:2px; display:block; }
+
+  /* STREAK */
+  .streak-box { background:var(--surface); border:1px solid rgba(249,115,22,0.2); border-radius:10px; padding:14px; margin-bottom:12px; text-align:center; position:relative; overflow:hidden; }
+  .streak-box::after { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(249,115,22,0.6),transparent); }
+  .stn { font-family:var(--head); font-size:2.2rem; font-weight:900; color:var(--orange); display:block; }
+  .sts { font-size:0.72rem; color:var(--muted); margin-top:2px; }
+
+  /* XP BAR */
+  .xpb { width:100%; height:7px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden; }
+  .xpf { height:100%; border-radius:4px; transition:width 0.5s ease; }
+
+  /* QUEST */
+  .quest { margin-bottom:12px; }
+  .qt { display:flex; justify-content:space-between; margin-bottom:4px; align-items:center; }
+  .qtxt { font-size:0.82rem; }
+  .qxp { font-size:0.68rem; color:var(--violet); }
+  .qsub { font-size:0.62rem; color:var(--muted); margin-top:3px; }
+
+  /* LOG BTNS */
+  .lgrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .lbtn { padding:15px 10px; border-radius:8px; cursor:pointer; font-size:0.88rem; font-weight:600; text-align:center; border:1px solid; transition:all 0.15s; line-height:1.5; }
+  .lbtn.y { background:rgba(34,197,94,0.08); border-color:rgba(34,197,94,0.5); color:var(--green); }
+  .lbtn.n { background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.5); color:var(--red); }
+  .lbtn:hover { filter:brightness(1.2); transform:translateY(-1px); }
+  .lsm { display:block; font-size:0.62rem; opacity:0.55; margin-top:2px; }
+
+  /* LIST */
+  .li { background:var(--surface); border-radius:8px; padding:11px 14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.05); animation:fadeUp 0.25s ease; }
+  .li.y { border-color:rgba(34,197,94,0.2); }
+  .li.n { border-color:rgba(239,68,68,0.2); }
+  .lim { font-size:0.88rem; font-weight:500; }
+  .limt { font-size:0.68rem; color:var(--muted); text-align:right; }
+
+  /* INPUTS */
+  .fld { width:100%; padding:11px 14px; margin-bottom:10px; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:var(--text); font-size:0.92rem; outline:none; transition:border-color 0.2s; }
+  .fld:focus { border-color:rgba(0,229,255,0.35); }
+  .fld::placeholder { color:var(--muted); }
+  textarea.fld { resize:vertical; min-height:110px; line-height:1.6; }
+  .r2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+  .r2 .fld { margin-bottom:0; }
+  .sbtn { width:100%; padding:11px; border-radius:6px; cursor:pointer; font-family:var(--head); font-size:0.68rem; letter-spacing:0.1em; border:1px solid; transition:all 0.2s; margin-top:10px; }
+  .sbtn.c { background:rgba(0,229,255,0.08); border-color:rgba(0,229,255,0.5); color:var(--cyan); }
+  .sbtn.v { background:rgba(139,92,246,0.08); border-color:rgba(139,92,246,0.5); color:var(--violet); }
+  .sbtn:hover { filter:brightness(1.2); }
+  .sbtn:disabled { opacity:0.35; cursor:not-allowed; }
+
+  /* SCRIPT */
+  .scr { background:var(--surface); border:1px solid rgba(139,92,246,0.2); border-radius:8px; padding:13px 16px; margin-bottom:8px; cursor:pointer; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; animation:fadeUp 0.25s ease; }
+  .scr:hover { border-color:rgba(139,92,246,0.5); }
+  .scr-n { font-size:0.9rem; font-weight:500; }
+  .scr-a { font-size:0.65rem; color:var(--violet); font-family:var(--head); }
+
+  /* BADGES */
+  .bgrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .bcard { background:var(--surface); border-radius:8px; padding:14px 10px; text-align:center; border:1px solid rgba(255,255,255,0.06); transition:all 0.3s; }
+  .bcard.e { border-color:rgba(234,179,8,0.3); }
+  .bcard.l { opacity:0.3; }
+  .bico { font-size:2rem; display:block; margin-bottom:6px; }
+  .bcard.e .bico { filter:drop-shadow(0 0 8px rgba(234,179,8,0.6)); }
+  .bname { font-family:var(--head); font-size:0.62rem; color:var(--gold); margin-bottom:3px; }
+  .bcard.l .bname { color:var(--muted); }
+  .bdesc { font-size:0.65rem; color:var(--muted); }
+
+  /* MODAL */
+  .mbg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.86); z-index:500; align-items:center; justify-content:center; backdrop-filter:blur(6px); padding:16px; }
+  .mbg.open { display:flex; }
+  .mbox { background:#0b0b18; border:1px solid rgba(0,229,255,0.2); border-radius:12px; padding:22px; max-width:440px; width:100%; max-height:82vh; overflow-y:auto; animation:fadeUp 0.2s ease; position:relative; }
+  .mtit { font-family:var(--head); font-size:0.85rem; color:var(--cyan); letter-spacing:0.1em; margin-bottom:16px; }
+  .mcls { position:absolute; top:14px; right:14px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:1rem; }
+
+  /* OBJ LIST */
+  .olist { display:flex; flex-direction:column; gap:8px; }
+  .obtn { padding:12px 14px; border-radius:6px; cursor:pointer; text-align:left; font-size:0.88rem; font-weight:500; border:1px solid; transition:all 0.15s; }
+  .obtn.y { background:rgba(34,197,94,0.08); border-color:rgba(34,197,94,0.3); color:var(--green); font-size:0.95rem; }
+  .obtn.n { background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.2); color:#fca5a5; }
+  .obtn:hover { filter:brightness(1.2); }
+  .oxp { float:right; font-size:0.65rem; opacity:0.6; }
+
+  /* MOTIV */
+  .mico { font-size:3rem; text-align:center; display:block; margin-bottom:14px; }
+  .mmsg { font-size:0.95rem; line-height:1.7; color:#cbd5e1; text-align:center; margin-bottom:20px; }
+
+  /* SCRIPT VIEW */
+  .sbody { white-space:pre-wrap; font-size:0.88rem; line-height:1.7; color:#94a3b8; background:rgba(0,0,0,0.3); padding:14px; border-radius:6px; border:1px solid rgba(139,92,246,0.15); }
+
+  /* XP POP */
+  .xppop { position:fixed; top:72px; right:16px; z-index:9999; font-family:var(--head); font-size:0.82rem; color:var(--cyan); text-shadow:0 0 12px rgba(0,229,255,0.7); pointer-events:none; animation:xpFloat 2.4s ease forwards; white-space:nowrap; }
+
+  /* TASK */
+  .trow { display:flex; align-items:center; gap:10px; flex:1; }
+  .cb { width:18px; height:18px; border-radius:4px; flex-shrink:0; border:1px solid rgba(0,229,255,0.4); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+  .cb.on { background:var(--cyan); border-color:var(--cyan); }
+  .tdone { text-decoration:line-through; opacity:0.45; }
+
+  .sec { font-family:var(--head); font-size:0.68rem; letter-spacing:0.15em; color:var(--cyan); margin-bottom:14px; }
+  .empty { text-align:center; padding:40px 0; color:var(--muted); font-size:0.85rem; }
+  .addbtn { width:100%; padding:12px; margin-bottom:14px; background:rgba(0,229,255,0.07); border:1px solid rgba(0,229,255,0.3); border-radius:8px; color:var(--cyan); cursor:pointer; font-family:var(--head); font-size:0.68rem; letter-spacing:0.1em; transition:all 0.2s; }
+  .addbtn:hover { background:rgba(0,229,255,0.13); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes xpFloat { 0%{opacity:0;transform:translateY(8px)} 20%{opacity:1;transform:translateY(-16px)} 75%{opacity:1;transform:translateY(-36px)} 100%{opacity:0;transform:translateY(-52px)} }
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <h1>⚡ APEX</h1>
+      <p>ALWAYS PURSUING EXCELLENCE</p>
+    </div>
+    <div class="auth-box">
+      <div class="auth-tabs">
+        <button class="auth-tab on" id="tl" onclick="setMode('login')">Connexion</button>
+        <button class="auth-tab"    id="tr" onclick="setMode('register')">Inscription</button>
+      </div>
+      <div id="amsg"></div>
+      <input class="fi hidden" type="text"     id="fn" placeholder="Ton prénom ou surnom"/>
+      <input class="fi"        type="email"    id="fe" placeholder="Courriel"/>
+      <input class="fi"        type="password" id="fp" placeholder="Mot de passe (6 car. min)" onkeydown="if(event.key==='Enter')doAuth()"/>
+      <button class="btn-p" id="abtn" onclick="doAuth()">ENTRER DANS L'ARÈNE</button>
+      <div class="divider">ou</div>
+      <button class="btn-g" onclick="doGoogle()">
+        <svg width="16" height="16" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Continuer avec Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <div class="app-hdr">
+    <span class="hdr-logo">⚡ APEX</span>
+    <div class="hdr-r">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+          <span class="hdr-lvl" id="hlvl"></span>
+          <span class="hdr-xp"  id="hxp"></span>
+        </div>
+        <div class="mini-bar"><div class="mini-fill" id="hbar"></div></div>
+      </div>
+      <div class="av" id="hav" onclick="doLogout()" title="Déconnexion"></div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="tab-panel on" id="p-dashboard">
+      <p id="greet" style="color:var(--muted);font-size:0.72rem;letter-spacing:0.1em;margin-bottom:14px"></p>
+      <div class="streak-box"><span style="font-size:1.8rem">🔥</span><span class="stn" id="stn">0</span><span class="sts" id="sts">Lance ta série!</span></div>
+      <div class="srow" id="srow"></div>
+      <div class="card v"><div class="ct">QUÊTES DU JOUR</div><div id="quests"></div></div>
+      <div class="card"><div class="ct">LOGGER UN APPEL</div>
+        <div class="lgrid">
+          <button class="lbtn y" onclick="openM('ml')">✅ FERMÉ!<span class="lsm">+100 XP</span></button>
+          <button class="lbtn n" onclick="openM('ml')">❌ OBJECTION<span class="lsm">+25 XP</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-calls">
+      <div class="sec" id="chdr">HISTORIQUE</div>
+      <button class="addbtn" onclick="openM('ml')">+ LOGGER UN APPEL</button>
+      <div id="clist"></div>
+    </div>
+
+    <div class="tab-panel" id="p-calendar">
+      <div class="sec">PLANIFICATION</div>
+      <div class="card"><div class="ct">NOUVELLE TÂCHE</div>
+        <input class="fld" id="tt" placeholder="Description de la tâche..."/>
+        <div class="r2"><input class="fld" type="date" id="td"/><input class="fld" type="time" id="th"/></div>
+        <button class="sbtn c" id="tbtn" onclick="addTask()">PLANIFIER +15 XP</button>
+      </div>
+      <div id="tlist"></div>
+    </div>
+
+    <div class="tab-panel" id="p-scripts">
+      <div class="sec">MES SCRIPTS D'APPEL</div>
+      <div class="card v"><div class="ct">CRÉER UN SCRIPT</div>
+        <input    class="fld" id="st" placeholder="Titre (ex: Cold call PME TI)"/>
+        <textarea class="fld" id="sc" placeholder="Écris ton script ici..."></textarea>
+        <button class="sbtn v" id="sbtn" onclick="addScript()">SAUVEGARDER +50 XP</button>
+      </div>
+      <div id="slist"></div>
+    </div>
+
+    <div class="tab-panel" id="p-badges">
+      <div class="sec" id="bhdr">SALLE DES TROPHÉES</div>
+      <div class="bgrid" id="bgrid"></div>
+    </div>
+  </div>
+
+  <nav class="bot-nav">
+    <button class="ni on" onclick="goTab(this,'dashboard')"><span class="ni-ico">⚡</span><span class="ni-lbl">HQ</span></button>
+    <button class="ni"    onclick="goTab(this,'calls')"    ><span class="ni-ico">📞</span><span class="ni-lbl">APPELS</span></button>
+    <button class="ni"    onclick="goTab(this,'calendar')" ><span class="ni-ico">📅</span><span class="ni-lbl">AGENDA</span></button>
+    <button class="ni"    onclick="goTab(this,'scripts')"  ><span class="ni-ico">📝</span><span class="ni-lbl">SCRIPTS</span></button>
+    <button class="ni"    onclick="goTab(this,'badges')"   ><span class="ni-ico">🏆</span><span class="ni-lbl">BADGES</span></button>
+  </nav>
+</div>
+
+<!-- MODALS -->
+<div class="mbg" id="ml">
+  <div class="mbox">
+    <button class="mcls" onclick="closeM('ml')">✕</button>
+    <div class="mtit">TYPE D'APPEL?</div>
+    <div class="olist">
+      <button class="obtn y" onclick="logCall('yes',null)">✅ VENTE FERMÉE <span class="oxp">+100 XP 🔥</span></button>
+      <button class="obtn n" onclick="logCall('objection','not_interested')">❌ Pas intéressé <span class="oxp">+25 XP</span></button>
+      <button class="obtn n" onclick="logCall('objection','too_expensive')">❌ Trop cher <span class="oxp">+25 XP</span></button>
+      <button class="obtn n" onclick="logCall('objection','has_provider')">❌ Déjà un fournisseur <span class="oxp">+25 XP</span></button>
+      <button class="obtn n" onclick="logCall('objection','bad_timing')">❌ Pas le bon moment <span class="oxp">+25 XP</span></button>
+      <button class="obtn n" onclick="logCall('objection','not_decision_maker')">❌ Pas décideur <span class="oxp">+25 XP</span></button>
+      <button class="obtn n" onclick="logCall('objection','no_budget')">❌ Pas de budget <span class="oxp">+25 XP</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="mbg" id="mm">
+  <div class="mbox" style="text-align:center">
+    <span class="mico">💪</span>
+    <div class="mtit" style="text-align:center">TIENS BON, GUERRIER</div>
+    <p class="mmsg" id="mmsg"></p>
+    <button class="sbtn c" onclick="closeM('mm')">BACK IN THE GAME ⚡</button>
+  </div>
+</div>
+
+<div class="mbg" id="ms">
+  <div class="mbox">
+    <button class="mcls" onclick="closeM('ms')">✕</button>
+    <div class="mtit" id="mst"></div>
+    <div class="sbody" id="msb"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         signInWithPopup, GoogleAuthProvider, signOut, sendEmailVerification, updateProfile }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, collection,
+         query, where, orderBy, getDocs, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* ══ REMPLACE CES VALEURS PAR TES CLÉS FIREBASE ══════════════════════
+   Va sur https://console.firebase.google.com > ton projet > Paramètres > Config web
+   ════════════════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBHClVA3hz4BUPQlp0g_2zXVsRWyyIWAJ0",
+  authDomain: "apex-sales-4a5eb.firebaseapp.com",
+  projectId: "apex-sales-4a5eb",
+  storageBucket: "apex-sales-4a5eb.firebasestorage.app",
+  messagingSenderId: "153692544203",
+  appId: "1:153692544203:web:1721fe22f429cb5630cf4e"
+};
+
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+const fbApp = initializeApp(FB);
+const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
+const gp    = new GoogleAuthProvider();
+
+const LVL = [
+  {n:"RECRUE",   min:0,   max:200,  c:"#94a3b8",i:"🎯"},
+  {n:"CHASSEUR", min:200, max:600,  c:"#00e5ff",i:"🏹"},
+  {n:"PRÉDATEUR",min:600, max:1200, c:"#8b5cf6",i:"⚡"},
+  {n:"APEX",     min:1200,max:2500, c:"#f97316",i:"🔥"},
+  {n:"LÉGENDE",  min:2500,max:99999,c:"#eab308",i:"👑"},
+];
+const OR = {
+  not_interested:["Un non aujourd'hui, c'est souvent un oui mal informé. Tu as planté une graine. 🌱","Les plus grandes ventes commencent par un refus. 💪","Chaque non te rapproche du prochain oui."],
+  too_expensive: ["Le prix n'est jamais le vrai problème -- c'est la valeur perçue. 💡","Montre-leur le coût de ne rien faire.","Un prospect qui parle de prix est encore dans la conversation! 🔥"],
+  has_provider:  ["Parfait -- ils savent qu'ils ont besoin du service. 50% du chemin fait! ⚡","Les clients insatisfaits ne le disent pas toujours. Reviens dans 3 mois.","Sois le meilleur fournisseur qu'ils vont trouver."],
+  bad_timing:    ["Il n'y a jamais un bon moment -- sauf quand c'est urgent. 📅","Mauvais timing aujourd'hui = appel planifié demain!","Ta persistance compte plus que le timing. 💯"],
+  not_decision_maker:["Tu as trouvé un allié interne potentiel. Demande une intro. 🤝","L'influenceur d'aujourd'hui est le décideur de demain.","Chaque contact est une porte vers le décideur."],
+  no_budget:     ["Crée l'urgence qui libère le budget. 💰","Le budget existe toujours pour ce qui est prioritaire.","Quand ça coûte plus cher de ne rien faire, le budget apparaît. 🎯"],
+};
+const BDG = [
+  {id:"first_call", i:"📞",n:"Premier Appel",  d:"Ton tout premier appel",   t:"calls",  v:1},
+  {id:"ten_calls",  i:"🔟",n:"Dix Combats",    d:"10 appels complétés",       t:"calls",  v:10},
+  {id:"hundred",    i:"💯",n:"Centurion",       d:"100 appels complétés",      t:"calls",  v:100},
+  {id:"first_yes",  i:"✅",n:"Premier Oui",    d:"Première vente fermée",     t:"closes", v:1},
+  {id:"five_yes",   i:"🏆",n:"Série Gagnante", d:"5 ventes fermées",          t:"closes", v:5},
+  {id:"streak_3",   i:"🔥",n:"En Feu",         d:"3 jours de streak",         t:"streak", v:3},
+  {id:"streak_7",   i:"⚡",n:"Inarrêtable",    d:"7 jours de streak",         t:"streak", v:7},
+  {id:"scripter",   i:"📝",n:"Stratège",        d:"Premier script créé",       t:"scripts",v:1},
+];
+const QST = [
+  {txt:"Faire 5 appels aujourd'hui",target:5,xp:50,key:"calls"},
+  {txt:"Logger 1 objection",         target:1,xp:30,key:"obj"},
+  {txt:"Planifier 3 tâches",         target:3,xp:40,key:"tasks"},
+];
+
+let U=null, D={}, calls=[], tasks=[], scripts=[], mode="login";
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    U = user;
+    await loadAll();
+    await tickStreak();
+    render();
+    document.getElementById("auth-screen").style.display = "none";
+    document.getElementById("app-screen").classList.add("show");
+  } else {
+    U = null;
+    document.getElementById("auth-screen").style.display = "flex";
+    document.getElementById("app-screen").classList.remove("show");
+  }
+});
+
+async function loadAll() {
+  const snap = await getDoc(doc(db,"users",U.uid));
+  D = snap.exists() ? snap.data() : {
+    displayName:U.displayName||U.email.split("@")[0], email:U.email,
+    xp:0,streak:0,lastActive:new Date().toDateString(),
+    badges:[],totalCalls:0,totalCloses:0,totalScripts:0
+  };
+  if (!snap.exists()) await setDoc(doc(db,"users",U.uid),D);
+  try { const q=query(collection(db,"calls"),where("uid","==",U.uid),orderBy("createdAt","desc")); calls=(await getDocs(q)).docs.map(d=>({id:d.id,...d.data()})); } catch(e){calls=[];}
+  try { const q=query(collection(db,"tasks"),where("uid","==",U.uid),orderBy("date","asc"));       tasks=(await getDocs(q)).docs.map(d=>({id:d.id,...d.data()})); } catch(e){tasks=[];}
+  try { const q=query(collection(db,"scripts"),where("uid","==",U.uid),orderBy("createdAt","desc"));scripts=(await getDocs(q)).docs.map(d=>({id:d.id,...d.data()})); } catch(e){scripts=[];}
+}
+
+async function tickStreak() {
+  const today=new Date().toDateString(), yest=new Date(Date.now()-86400000).toDateString();
+  if (D.lastActive===today) return;
+  D.streak = D.lastActive===yest ? (D.streak||0)+1 : 1;
+  D.lastActive = today;
+  await setDoc(doc(db,"users",U.uid),{streak:D.streak,lastActive:D.lastActive},{merge:true});
+}
+
+async function save(p){ Object.assign(D,p); await setDoc(doc(db,"users",U.uid),D,{merge:true}); }
+
+function lvlOf(xp){ return LVL.find(l=>xp>=l.min&&xp<l.max)||LVL[0]; }
+function olbl(k){ return{not_interested:"Pas intéressé",too_expensive:"Trop cher",has_provider:"Déjà un fournisseur",bad_timing:"Pas le bon moment",not_decision_maker:"Pas décideur",no_budget:"Pas de budget"}[k]||k; }
+
+function render() {
+  const xp=D.xp||0, streak=D.streak||0, name=D.displayName||"Guerrier";
+  const lvl=lvlOf(xp), next=LVL[LVL.indexOf(lvl)+1];
+  document.getElementById("hlvl").textContent=`${lvl.i} ${lvl.n}`;
+  document.getElementById("hlvl").style.color=lvl.c;
+  document.getElementById("hxp").textContent=`${xp} XP`;
+  document.getElementById("hav").textContent=name[0].toUpperCase();
+  if(next){ const p=((xp-lvl.min)/(next.min-lvl.min))*100; document.getElementById("hbar").style.cssText=`width:${p}%;background:${lvl.c}`; }
+  const h=new Date().getHours(), gr=h<12?"BONNE MATINÉE":h<18?"BON APRÈS-MIDI":"BONSOIR";
+  document.getElementById("greet").innerHTML=`${gr}, <span style="color:var(--cyan)">${name.toUpperCase()}</span>`;
+  document.getElementById("stn").textContent=`${streak} JOUR${streak>1?"S":""}`;
+  document.getElementById("sts").textContent=streak>=7?"Tu es INARRÊTABLE! ⚡":streak>=3?"Continue, tu es en feu!":"Lance ta série!";
+  document.getElementById("srow").innerHTML=[
+    {l:"Appels",v:D.totalCalls||0,c:"var(--cyan)"},
+    {l:"Ventes",v:D.totalCloses||0,c:"var(--green)"},
+    {l:"Badges",v:(D.badges||[]).length,c:"var(--gold)"},
+  ].map(s=>`<div class="sbox" style="border-color:${s.c}22"><span class="snum" style="color:${s.c};text-shadow:0 0 12px ${s.c}55">${s.v}</span><span class="slbl">${s.l}</span></div>`).join("");
+  const td=new Date().toLocaleDateString("fr-CA");
+  const qp={calls:calls.filter(c=>c.date===td).length,obj:calls.filter(c=>c.date===td&&c.outcome==="objection").length,tasks:tasks.filter(t=>t.date===td).length};
+  document.getElementById("quests").innerHTML=QST.map(q=>{
+    const p=qp[q.key]||0, done=p>=q.target;
+    return`<div class="quest"><div class="qt"><span class="qtxt" style="color:${done?"var(--green)":"var(--text)"}">${done?"✅":"⬜"} ${q.txt}</span><span class="qxp">+${q.xp} XP</span></div><div class="xpb"><div class="xpf" style="width:${Math.min(p/q.target,1)*100}%;background:${done?"var(--green)":"var(--violet)"}"></div></div><div class="qsub">${p}/${q.target}</div></div>`;
+  }).join("");
+  document.getElementById("chdr").textContent=`HISTORIQUE -- ${calls.length} APPELS`;
+  document.getElementById("clist").innerHTML=calls.length===0?'<div class="empty">Aucun appel encore. Lance-toi! 🚀</div>':
+    calls.map(c=>`<div class="li ${c.outcome==="yes"?"y":"n"}"><span class="lim" style="color:${c.outcome==="yes"?"var(--green)":"#fca5a5"}">${c.outcome==="yes"?"✅ VENTE FERMÉE":"❌ "+olbl(c.objectionKey)}</span><span class="limt">${c.date||""}<br/>${c.time||""}</span></div>`).join("");
+  document.getElementById("tlist").innerHTML=tasks.length===0?'<div class="empty">Aucune tâche planifiée.</div>':
+    tasks.map(t=>`<div class="li"><div class="trow"><div class="cb ${t.done?"on":""}" onclick="toggleTask('${t.id}')">${t.done?'<span style="color:#07070f;font-size:0.65rem;font-weight:700">✓</span>':""}</div><span class="lim ${t.done?"tdone":""}">${t.title}</span></div><span class="limt">${t.date||""}<br/>${t.time||""}</span></div>`).join("");
+  document.getElementById("slist").innerHTML=scripts.length===0?'<div class="empty">Crée ton premier script! +50 XP 📝</div>':
+    scripts.map(s=>`<div class="scr" onclick="viewScript('${s.id}')"><span class="scr-n">📝 ${s.title}</span><span class="scr-a">VOIR ▶</span></div>`).join("");
+  const earned=D.badges||[];
+  document.getElementById("bhdr").textContent=`SALLE DES TROPHÉES -- ${earned.length}/${BDG.length}`;
+  document.getElementById("bgrid").innerHTML=BDG.map(b=>{const own=earned.includes(b.id);return`<div class="bcard ${own?"e":"l"}"><span class="bico">${b.i}</span><div class="bname">${b.n}</div><div class="bdesc">${b.d}</div>${own?'<div style="font-size:0.58rem;color:rgba(234,179,8,0.5);margin-top:4px;font-family:var(--head)">DÉBLOQUÉ ✓</div>':""}</div>`;}).join("");
+}
+
+async function addXP(amount, label) {
+  D.xp=(D.xp||0)+amount;
+  await save({xp:D.xp});
+  const p=document.createElement("div"); p.className="xppop"; p.textContent=label;
+  document.body.appendChild(p); setTimeout(()=>p.remove(),2500);
+  const earned=D.badges||[], add=[];
+  for(const b of BDG){ if(earned.includes(b.id)) continue; const v=b.t==="calls"?D.totalCalls:b.t==="closes"?D.totalCloses:b.t==="streak"?D.streak:D.totalScripts; if((v||0)>=b.v) add.push(b.id); }
+  if(add.length){ D.badges=[...earned,...add]; await save({badges:D.badges}); }
+  render();
+}
+
+window.logCall = async function(outcome, objKey) {
+  closeM("ml");
+  const today=new Date().toLocaleDateString("fr-CA"), time=new Date().toLocaleTimeString("fr-CA",{hour:"2-digit",minute:"2-digit"});
+  const ref=await addDoc(collection(db,"calls"),{uid:U.uid,outcome,objectionKey:objKey||null,date:today,time,createdAt:serverTimestamp()});
+  calls.unshift({id:ref.id,uid:U.uid,outcome,objectionKey:objKey||null,date:today,time});
+  D.totalCalls=(D.totalCalls||0)+1;
+  if(outcome==="yes") D.totalCloses=(D.totalCloses||0)+1;
+  await save({totalCalls:D.totalCalls,totalCloses:D.totalCloses});
+  await addXP(outcome==="yes"?100:25, outcome==="yes"?"+100 XP VENTE FERMÉE! 🔥":"+25 XP Appel logué");
+  if(outcome==="objection"&&objKey){ const msgs=OR[objKey]||[]; document.getElementById("mmsg").textContent=msgs[Math.floor(Math.random()*msgs.length)]||"Continue! 💪"; openM("mm"); }
+};
+
+window.addTask = async function() {
+  const title=document.getElementById("tt").value.trim(), date=document.getElementById("td").value, time=document.getElementById("th").value;
+  if(!title) return;
+  const btn=document.getElementById("tbtn"); btn.disabled=true; btn.textContent="...";
+  const ref=await addDoc(collection(db,"tasks"),{uid:U.uid,title,date,time,done:false,createdAt:serverTimestamp()});
+  tasks.push({id:ref.id,uid:U.uid,title,date,time,done:false});
+  document.getElementById("tt").value=document.getElementById("td").value=document.getElementById("th").value="";
+  await addXP(15,"+15 XP Tâche planifiée");
+  btn.disabled=false; btn.textContent="PLANIFIER +15 XP";
+};
+
+window.toggleTask = async function(id) {
+  const t=tasks.find(x=>x.id===id); if(!t) return;
+  t.done=!t.done; await setDoc(doc(db,"tasks",id),{done:t.done},{merge:true}); render();
+};
+
+window.addScript = async function() {
+  const title=document.getElementById("st").value.trim(), content=document.getElementById("sc").value.trim();
+  if(!title||!content) return;
+  const btn=document.getElementById("sbtn"); btn.disabled=true; btn.textContent="...";
+  const ref=await addDoc(collection(db,"scripts"),{uid:U.uid,title,content,createdAt:serverTimestamp()});
+  scripts.unshift({id:ref.id,uid:U.uid,title,content});
+  D.totalScripts=(D.totalScripts||0)+1; await save({totalScripts:D.totalScripts});
+  document.getElementById("st").value=document.getElementById("sc").value="";
+  await addXP(50,"+50 XP Script créé! 📝");
+  btn.disabled=false; btn.textContent="SAUVEGARDER +50 XP";
+};
+
+window.viewScript = function(id) {
+  const s=scripts.find(x=>x.id===id); if(!s) return;
+  document.getElementById("mst").textContent=s.title; document.getElementById("msb").textContent=s.content; openM("ms");
+};
+
+window.setMode = function(m) {
+  mode=m;
+  document.getElementById("tl").classList.toggle("on",m==="login");
+  document.getElementById("tr").classList.toggle("on",m==="register");
+  document.getElementById("fn").classList.toggle("hidden",m==="login");
+  document.getElementById("abtn").textContent=m==="login"?"ENTRER DANS L'ARÈNE":"CRÉER MON COMPTE";
+  document.getElementById("amsg").innerHTML="";
+};
+
+function amsg(txt,type="err"){ document.getElementById("amsg").innerHTML=`<div class="amsg ${type}">${txt}</div>`; }
+
+window.doAuth = async function() {
+  const email=document.getElementById("fe").value.trim(), pass=document.getElementById("fp").value, name=document.getElementById("fn").value.trim();
+  if(!email||!pass||(mode==="register"&&!name)){amsg("Remplis tous les champs.");return;}
+  const btn=document.getElementById("abtn"); btn.disabled=true; btn.textContent="...";
+  try {
+    if(mode==="register"){
+      const c=await createUserWithEmailAndPassword(auth,email,pass);
+      await updateProfile(c.user,{displayName:name});
+      await sendEmailVerification(c.user);
+      await setDoc(doc(db,"users",c.user.uid),{displayName:name,email,xp:0,streak:0,lastActive:new Date().toDateString(),badges:[],totalCalls:0,totalCloses:0,totalScripts:0});
+      await signOut(auth);
+      amsg("Compte créé! Vérifie ton courriel avant de te connecter. 📬","ok");
+    } else {
+      const c=await signInWithEmailAndPassword(auth,email,pass);
+      if(!c.user.emailVerified){await signOut(auth); amsg("Vérifie ton courriel avant de te connecter.");}
+    }
+  } catch(e){
+    const m={"auth/email-already-in-use":"Ce courriel est déjà utilisé.","auth/wrong-password":"Mot de passe incorrect.","auth/invalid-credential":"Courriel ou mot de passe incorrect.","auth/user-not-found":"Aucun compte avec ce courriel.","auth/weak-password":"Mot de passe trop faible (6 car. min).","auth/invalid-email":"Format de courriel invalide."};
+    amsg(m[e.code]||"Erreur: "+e.message);
+  }
+  btn.disabled=false; btn.textContent=mode==="login"?"ENTRER DANS L'ARÈNE":"CRÉER MON COMPTE";
+};
+
+window.doGoogle = async function() {
+  try {
+    const c=await signInWithPopup(auth,gp);
+    const snap=await getDoc(doc(db,"users",c.user.uid));
+    if(!snap.exists()) await setDoc(doc(db,"users",c.user.uid),{displayName:c.user.displayName||c.user.email,email:c.user.email,xp:0,streak:0,lastActive:new Date().toDateString(),badges:[],totalCalls:0,totalCloses:0,totalScripts:0});
+  } catch(e){amsg("Erreur Google: "+e.message);}
+};
+
+window.doLogout = ()=>signOut(auth);
+window.openM    = id=>document.getElementById(id).classList.add("open");
+window.closeM   = id=>document.getElementById(id).classList.remove("open");
+window.goTab    = function(btn,tab){ document.querySelectorAll(".ni").forEach(b=>b.classList.remove("on")); btn.classList.add("on"); document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("on")); document.getElementById("p-"+tab).classList.add("on"); };
+document.querySelectorAll(".mbg").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open");}));
+</script>
+</body>
+</html>
