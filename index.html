@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>APEX -- Always Pursuing Excellence</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+<!-- ═══════════════════════════════════════════════════
+     REMPLACE CES VALEURS PAR TES CLÉS FIREBASE
+     Console : https://console.firebase.google.com
+════════════════════════════════════════════════════ -->
+<script>
+  const firebaseConfig = {
+  apiKey: "AIzaSyBHClVA3hz4BUPQlp0g_2zXVsRWyyIWAJ0",
+  authDomain: "apex-sales-4a5eb.firebaseapp.com",
+  projectId: "apex-sales-4a5eb",
+  storageBucket: "apex-sales-4a5eb.firebasestorage.app",
+  messagingSenderId: "153692544203",
+  appId: "1:153692544203:web:1721fe22f429cb5630cf4e"
+};
+</script>
+
+<style>
+:root {
+  --bg: #04040a;
+  --bg2: #08081200;
+  --card: #0a0a16;
+  --cyan: #00e5ff;
+  --violet: #7c4dff;
+  --green: #69ff47;
+  --red: #ff4455;
+  --orange: #ff6d00;
+  --gold: #ffd600;
+  --text: #dde0ff;
+  --muted: #44455a;
+  --font-head: 'Orbitron', monospace;
+  --font-body: 'Rajdhani', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0a0a16; }
+::-webkit-scrollbar-thumb { background: #00e5ff33; border-radius: 2px; }
+
+/* ── ANIMATIONS ── */
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
+@keyframes float2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(14px)} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@keyframes xppop { 0%{opacity:0;transform:translateY(10px) scale(0.8)} 20%{opacity:1;transform:translateY(-20px) scale(1.05)} 80%{opacity:1;transform:translateY(-40px)} 100%{opacity:0;transform:translateY(-60px)} }
+@keyframes slideIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes scanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
+@keyframes glow-pulse { 0%,100%{box-shadow:0 0 15px var(--cyan)33} 50%{box-shadow:0 0 30px var(--cyan)66} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes badgePop { 0%{transform:scale(0) rotate(-10deg);opacity:0} 60%{transform:scale(1.2) rotate(3deg)} 100%{transform:scale(1) rotate(0deg);opacity:1} }
+
+/* ── PARTICLES ── */
+.particles { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.particle {
+  position: absolute; border-radius: 50%; opacity: 0.25;
+  animation: float 8s ease-in-out infinite;
+}
+
+/* ── SCANLINE ── */
+.scanline {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #00e5ff22, transparent);
+  animation: scanline 6s linear infinite;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ══════════════════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════════════════ */
+#screen-auth {
+  align-items: center; justify-content: center;
+  padding: 24px 16px;
+  background: radial-gradient(ellipse at 50% 30%, #00e5ff08 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 80%, #7c4dff08 0%, transparent 50%);
+}
+
+.auth-logo { text-align: center; margin-bottom: 32px; }
+.auth-logo .bolt { font-size: 3.5rem; display: block; margin-bottom: 4px;
+  filter: drop-shadow(0 0 20px var(--cyan)); }
+.auth-logo h1 {
+  font-family: var(--font-head); font-size: 2.8rem; font-weight: 900;
+  color: var(--cyan); letter-spacing: 0.35em;
+  text-shadow: 0 0 20px var(--cyan)88, 0 0 40px var(--cyan)33;
+}
+.auth-logo p { color: var(--muted); font-size: 0.65rem; letter-spacing: 0.25em; margin-top: 6px; }
+
+.auth-card {
+  width: 100%; max-width: 400px;
+  background: var(--card);
+  border: 1px solid #00e5ff22;
+  border-radius: 12px; padding: 28px;
+  box-shadow: 0 0 40px #00e5ff11;
+  position: relative; overflow: hidden;
+}
+.auth-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan)88, transparent);
+}
+
+.tab-row { display: flex; gap: 8px; margin-bottom: 24px; }
+.tab-btn {
+  flex: 1; padding: 9px; background: transparent;
+  border: 1px solid var(--muted); border-radius: 6px;
+  color: var(--muted); cursor: pointer; font-family: var(--font-body);
+  font-size: 0.85rem; font-weight: 600; transition: all 0.2s;
+}
+.tab-btn.active {
+  background: #00e5ff15; border-color: var(--cyan); color: var(--cyan);
+}
+
+.field { margin-bottom: 14px; }
+.field input {
+  width: 100%; padding: 12px 14px;
+  background: #060610; border: 1px solid #00e5ff22;
+  border-radius: 6px; color: var(--text);
+  font-family: var(--font-body); font-size: 0.95rem;
+  outline: none; transition: border-color 0.2s;
+}
+.field input:focus { border-color: #00e5ff55; }
+.field input::placeholder { color: var(--muted); }
+
+.btn-main {
+  width: 100%; padding: 13px;
+  background: #00e5ff15; border: 1px solid var(--cyan);
+  border-radius: 6px; color: var(--cyan); cursor: pointer;
+  font-family: var(--font-head); font-size: 0.75rem;
+  letter-spacing: 0.15em; transition: all 0.2s;
+  margin-bottom: 12px;
+}
+.btn-main:hover { background: #00e5ff25; box-shadow: 0 0 20px #00e5ff33; }
+.btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-google {
+  width: 100%; padding: 12px;
+  background: #ffffff08; border: 1px solid #ffffff18;
+  border-radius: 6px; color: #aaa; cursor: pointer;
+  font-family: var(--font-body); font-size: 0.9rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all 0.2s;
+}
+.btn-google:hover { background: #ffffff12; border-color: #ffffff28; }
+
+.divider {
+  display: flex; align-items: center; gap: 10px; margin: 14px 0;
+  color: var(--muted); font-size: 0.75rem;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: #1a1a2e;
+}
+
+.auth-msg { font-size: 0.82rem; padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; }
+.auth-msg.error { color: #ff7788; background: #ff445511; border: 1px solid #ff444533; }
+.auth-msg.success { color: var(--green); background: #69ff4711; border: 1px solid #69ff4733; }
+
+/* ══════════════════════════════════════════
+   MAIN APP
+══════════════════════════════════════════ */
+#screen-app { position: relative; }
+
+/* ── HEADER ── */
+.app-header {
+  position: sticky; top: 0; z-index: 200;
+  background: #04040aee; backdrop-filter: blur(12px);
+  border-bottom: 1px solid #00e5ff18;
+  padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header-logo { font-family: var(--font-head); font-size: 1rem; color: var(--cyan);
+  letter-spacing: 0.2em; text-shadow: 0 0 10px var(--cyan)66; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.level-badge {
+  font-family: var(--font-head); font-size: 0.65rem;
+  letter-spacing: 0.05em;
+}
+.xp-mini { font-size: 0.75rem; color: var(--cyan); font-weight: 600; }
+.xpbar-wrap { width: 80px; height: 5px; background: #1a1a2e; border-radius: 3px; overflow: hidden; }
+.xpbar-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+.avatar-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, #00e5ff33, #7c4dff33);
+  border: 1px solid #00e5ff44; color: var(--cyan);
+  font-family: var(--font-head); font-size: 0.8rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+
+/* ── NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: #04040af0; backdrop-filter: blur(12px);
+  border-top: 1px solid #00e5ff18;
+  display: flex; justify-content: space-around;
+  padding: 8px 0 16px;
+}
+.nav-btn {
+  background: none; border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 4px 14px; transition: all 0.2s;
+}
+.nav-btn .nav-icon { font-size: 1.2rem; transition: filter 0.2s; }
+.nav-btn .nav-label {
+  font-family: var(--font-head); font-size: 0.5rem;
+  letter-spacing: 0.05em; color: var(--muted);
+  transition: color 0.2s;
+}
+.nav-btn.active .nav-icon { filter: drop-shadow(0 0 8px var(--cyan)); }
+.nav-btn.active .nav-label { color: var(--cyan); }
+
+/* ── CONTENT ── */
+.content {
+  padding: 16px; max-width: 600px; margin: 0 auto;
+  padding-bottom: 90px; position: relative; z-index: 1;
+}
+
+/* ── TABS ── */
+.tab-content { display: none; animation: slideIn 0.3s ease; }
+.tab-content.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border: 1px solid #00e5ff22;
+  border-radius: 8px; padding: 16px;
+  margin-bottom: 12px; position: relative; overflow: hidden;
+  box-shadow: 0 0 15px #00e5ff0a;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, #00e5ff55, transparent);
+}
+.card.violet { border-color: #7c4dff33; box-shadow: 0 0 15px #7c4dff0a; }
+.card.violet::before { background: linear-gradient(90deg, transparent, #7c4dff88, transparent); }
+.card.green { border-color: #69ff4733; }
+.card.red { border-color: #ff445533; }
+.card.orange { border-color: #ff6d0033; box-shadow: 0 0 15px #ff6d000a; }
+.card.orange::before { background: linear-gradient(90deg, transparent, #ff6d0088, transparent); }
+.card.gold { border-color: #ffd60033; }
+
+.card-title {
+  font-family: var(--font-head); font-size: 0.68rem;
+  letter-spacing: 0.15em; margin-bottom: 14px;
+  color: var(--cyan);
+}
+.card.violet .card-title { color: var(--violet); }
+
+/* ── GRID STATS ── */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.stat-card {
+  background: var(--card); border-radius: 8px; padding: 14px 8px;
+  text-align: center; border: 1px solid transparent; position: relative; overflow: hidden;
+}
+.stat-val {
+  font-family: var(--font-head); font-size: 1.7rem; font-weight: 900;
+  display: block; line-height: 1;
+}
+.stat-label { font-size: 0.65rem; color: var(--muted); margin-top: 4px; display: block; }
+
+/* ── XP BAR ── */
+.xp-bar-wrap {
+  width: 100%; height: 8px; background: #1a1a2e;
+  border-radius: 4px; overflow: hidden; margin: 4px 0;
+}
+.xp-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* ── QUEST ── */
+.quest-row { margin-bottom: 12px; }
+.quest-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.quest-text { font-size: 0.82rem; }
+.quest-xp { font-size: 0.7rem; color: var(--violet); }
+.quest-prog { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+
+/* ── LOG BUTTONS ── */
+.log-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.log-btn {
+  padding: 16px 10px; border-radius: 8px; cursor: pointer;
+  font-family: var(--font-body); font-size: 0.9rem; font-weight: 600;
+  text-align: center; border: 1px solid; transition: all 0.2s; line-height: 1.4;
+}
+.log-btn.yes { background: #69ff4710; border-color: var(--green); color: var(--green); }
+.log-btn.no  { background: #ff445510; border-color: var(--red); color: var(--red); }
+.log-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
+.log-btn small { display: block; font-size: 0.65rem; opacity: 0.6; margin-top: 2px; }
+
+/* ── CALL ITEM ── */
+.call-item {
+  background: var(--card); border-radius: 6px; padding: 12px 14px;
+  margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+  border: 1px solid transparent; animation: slideIn 0.3s ease;
+}
+.call-item.yes { border-color: #69ff4722; }
+.call-item.no  { border-color: #ff445522; }
+.call-name { font-size: 0.88rem; font-weight: 600; }
+.call-time { font-size: 0.68rem; color: var(--muted); }
+
+/* ── INPUTS ── */
+.input-field {
+  width: 100%; padding: 11px 14px;
+  background: #060610; border: 1px solid #00e5ff1a;
+  border-radius: 6px; color: var(--text);
+  font-family: var(--font-body); font-size: 0.95rem;
+  outline: none; margin-bottom: 10px; transition: border-color 0.2s;
+}
+.input-field:focus { border-color: #00e5ff44; }
+.input-field::placeholder { color: var(--muted); }
+textarea.input-field { resize: vertical; line-height: 1.6; min-height: 120px; }
+
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.btn-save {
+  width: 100%; padding: 12px;
+  border-radius: 6px; cursor: pointer;
+  font-family: var(--font-head); font-size: 0.72rem;
+  letter-spacing: 0.1em; border: 1px solid; transition: all 0.2s;
+}
+.btn-save.cyan { background: #00e5ff12; border-color: var(--cyan); color: var(--cyan); }
+.btn-save.violet { background: #7c4dff12; border-color: var(--violet); color: var(--violet); }
+.btn-save:hover { filter: brightness(1.2); }
+.btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── SCRIPT ITEM ── */
+.script-item {
+  background: var(--card); border: 1px solid #7c4dff22;
+  border-radius: 8px; padding: 14px;
+  margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+  display: flex; justify-content: space-between; align-items: center;
+  animation: slideIn 0.3s ease;
+}
+.script-item:hover { border-color: #7c4dff55; background: #0f0f20; }
+.script-item-title { font-size: 0.9rem; font-weight: 600; }
+.script-arrow { font-size: 0.7rem; color: var(--violet); font-family: var(--font-head); }
+
+/* ── BADGES ── */
+.badges-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.badge-card {
+  background: var(--card); border-radius: 8px; padding: 16px 12px;
+  text-align: center; border: 1px solid #ffd60022; transition: all 0.3s;
+}
+.badge-card.locked { opacity: 0.35; border-color: #2a2a3a; }
+.badge-card.unlocked { animation: badgePop 0.5s ease; }
+.badge-icon { font-size: 2.2rem; margin-bottom: 8px; display: block; }
+.badge-card.unlocked .badge-icon { filter: drop-shadow(0 0 10px var(--gold)); }
+.badge-name { font-family: var(--font-head); font-size: 0.65rem; color: var(--gold); margin-bottom: 4px; }
+.badge-card.locked .badge-name { color: var(--muted); }
+.badge-desc { font-size: 0.68rem; color: var(--muted); }
+.badge-unlocked-tag { font-size: 0.58rem; color: #ffd60066; margin-top: 6px; font-family: var(--font-head); }
+
+/* ── STREAK ── */
+.streak-card {
+  background: var(--card); border: 1px solid #ff6d0033;
+  border-radius: 8px; padding: 16px; margin-bottom: 12px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.streak-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, #ff6d0088, transparent);
+}
+.streak-num {
+  font-family: var(--font-head); font-size: 2.5rem; font-weight: 900;
+  color: var(--orange); text-shadow: 0 0 20px var(--orange)88;
+  display: block;
+}
+.streak-msg { font-size: 0.75rem; color: #888; margin-top: 4px; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88); z-index: 500;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: #0a0a16; border: 1px solid #00e5ff33;
+  border-radius: 12px; padding: 24px;
+  max-width: 460px; width: 90%;
+  box-shadow: 0 0 50px #00e5ff18;
+  max-height: 80vh; overflow-y: auto;
+  animation: slideIn 0.25s ease;
+  position: relative;
+}
+.modal-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan)88, transparent);
+}
+.modal-title {
+  font-family: var(--font-head); font-size: 0.9rem; color: var(--cyan);
+  letter-spacing: 0.1em; margin-bottom: 18px;
+  text-shadow: 0 0 10px var(--cyan)66;
+}
+.modal-close {
+  position: absolute; top: 14px; right: 14px;
+  background: none; border: none; color: var(--muted);
+  cursor: pointer; font-size: 1.1rem;
+}
+
+/* ── OBJECTION BUTTONS ── */
+.objection-list { display: flex; flex-direction: column; gap: 8px; }
+.obj-btn {
+  padding: 12px 14px; background: #ff445508;
+  border: 1px solid #ff444522; border-radius: 6px;
+  color: #ff8899; cursor: pointer; font-family: var(--font-body);
+  font-size: 0.88rem; font-weight: 600; text-align: left;
+  transition: all 0.2s;
+}
+.obj-btn:hover { background: #ff445515; border-color: #ff444544; }
+.obj-btn.yes-btn {
+  background: #69ff4710; border-color: #69ff4733;
+  color: var(--green); font-size: 0.95rem;
+}
+.obj-btn.yes-btn:hover { background: #69ff4720; }
+.obj-xp { float: right; font-size: 0.7rem; opacity: 0.6; }
+
+/* ── MOTIVATION MODAL ── */
+.motiv-icon { font-size: 3.5rem; text-align: center; display: block; margin-bottom: 16px; }
+.motiv-msg {
+  font-size: 1rem; line-height: 1.7; color: #ccc;
+  text-align: center; margin-bottom: 20px;
+}
+.btn-back {
+  width: 100%; padding: 13px;
+  background: #00e5ff15; border: 1px solid var(--cyan);
+  border-radius: 6px; color: var(--cyan); cursor: pointer;
+  font-family: var(--font-head); font-size: 0.75rem; letter-spacing: 0.15em;
+  transition: all 0.2s;
+}
+.btn-back:hover { background: #00e5ff25; box-shadow: 0 0 20px #00e5ff33; }
+
+/* ── XP POP ── */
+.xp-popup {
+  position: fixed; top: 80px; right: 20px; z-index: 9999;
+  font-family: var(--font-head); font-size: 0.85rem;
+  color: var(--cyan); text-shadow: 0 0 15px var(--cyan);
+  pointer-events: none; white-space: nowrap;
+  animation: xppop 2.5s ease forwards;
+}
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 48px 0; color: var(--muted); font-size: 0.88rem; }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  font-family: var(--font-head); font-size: 0.72rem;
+  letter-spacing: 0.18em; color: var(--cyan);
+  margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+}
+.section-header::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, #00e5ff22, transparent);
+}
+
+/* ── TASK ITEM ── */
+.task-item {
+  background: var(--card); border: 1px solid #00e5ff15;
+  border-radius: 6px; padding: 12px 14px; margin-bottom: 8px;
+  display: flex; justify-content: space-between; align-items: center;
+  animation: slideIn 0.3s ease;
+}
+.task-title { font-size: 0.88rem; font-weight: 600; }
+.task-meta { font-size: 0.68rem; color: var(--muted); text-align: right; }
+
+/* ── LOADING ── */
+#screen-loading {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; background: var(--bg);
+}
+.loader-text {
+  font-family: var(--font-head); font-size: 1.4rem; color: var(--cyan);
+  letter-spacing: 0.3em; animation: pulse 1.5s ease infinite;
+  text-shadow: 0 0 20px var(--cyan)66;
+}
+
+/* ── SCRIPT VIEW ── */
+.script-content {
+  white-space: pre-wrap; font-size: 0.9rem; line-height: 1.7;
+  color: #ccc; background: #060610; padding: 14px;
+  border-radius: 6px; border: 1px solid #7c4dff22;
+}
+
+/* ── TASK DONE ── */
+.task-item.done .task-title { text-decoration: line-through; opacity: 0.5; }
+.task-checkbox {
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 1px solid var(--cyan); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-right: 10px; transition: all 0.2s;
+}
+.task-checkbox.checked { background: var(--cyan); }
+</style>
+</head>
+<body>
+
+<!-- PARTICLES -->
+<div class="particles" id="particles"></div>
+<div class="scanline"></div>
+
+<!-- LOADING -->
+<div id="screen-loading">
+  <span class="loader-text">⚡ APEX</span>
+</div>
+
+<!-- AUTH SCREEN -->
+<div id="screen-auth" class="screen">
+  <div class="auth-logo">
+    <span class="bolt">⚡</span>
+    <h1>APEX</h1>
+    <p>ALWAYS PURSUING EXCELLENCE</p>
+  </div>
+  <div class="auth-card">
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchAuthTab('login')">Connexion</button>
+      <button class="tab-btn" onclick="switchAuthTab('register')">Inscription</button>
+    </div>
+    <div id="auth-msg"></div>
+    <div id="field-name" class="field" style="display:none">
+      <input type="text" id="input-name" placeholder="Ton prénom ou surnom" />
+    </div>
+    <div class="field">
+      <input type="email" id="input-email" placeholder="Courriel" />
+    </div>
+    <div class="field">
+      <input type="password" id="input-password" placeholder="Mot de passe (6 car. min)"
+        onkeydown="if(event.key==='Enter') handleAuth()" />
+    </div>
+    <button class="btn-main" id="btn-auth" onclick="handleAuth()">
+      ENTRER DANS L'ARÈNE
+    </button>
+    <div class="divider">ou</div>
+    <button class="btn-google" onclick="handleGoogle()">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continuer avec Google
+    </button>
+  </div>
+</div>
+
+<!-- APP SCREEN -->
+<div id="screen-app" class="screen">
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <span class="header-logo">⚡ APEX</span>
+    <div class="header-right">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+          <span class="level-badge" id="hdr-level"></span>
+          <span class="xp-mini" id="hdr-xp"></span>
+        </div>
+        <div class="xpbar-wrap">
+          <div class="xpbar-fill" id="hdr-xpbar" style="background:var(--cyan)"></div>
+        </div>
+      </div>
+      <button class="avatar-btn" id="btn-avatar" onclick="handleLogout()"></button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="tab-content active" id="tab-dashboard">
+      <div id="greeting" style="color:var(--muted);font-size:0.72rem;margin-bottom:16px;letter-spacing:0.1em"></div>
+
+      <div class="streak-card">
+        <span style="font-size:2rem">🔥</span>
+        <span class="streak-num" id="streak-num">0</span>
+        <span class="streak-msg" id="streak-msg">Lance ta série!</span>
+      </div>
+
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div class="card violet">
+        <div class="card-title">QUÊTES DU JOUR</div>
+        <div id="quests-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">LOGGER UN APPEL</div>
+        <div class="log-grid">
+          <button class="log-btn yes" onclick="openLogModal()">
+            ✅ FERMÉ!<small>+100 XP</small>
+          </button>
+          <button class="log-btn no" onclick="openObjModal()">
+            ❌ OBJECTION<small>+25 XP</small>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALLS -->
+    <div class="tab-content" id="tab-calls">
+      <div class="section-header">HISTORIQUE DES APPELS</div>
+      <button class="btn-save cyan" style="margin-bottom:16px" onclick="openObjModal()">
+        + LOGGER UN APPEL
+      </button>
+      <div id="calls-list"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="tab-content" id="tab-calendar">
+      <div class="section-header">PLANIFICATION</div>
+      <div class="card">
+        <div class="card-title">NOUVELLE TÂCHE</div>
+        <input class="input-field" id="task-title" placeholder="Description de la tâche..." />
+        <div class="input-row" style="margin-bottom:12px">
+          <input class="input-field" type="date" id="task-date" style="margin-bottom:0" />
+          <input class="input-field" type="time" id="task-time" style="margin-bottom:0" />
+        </div>
+        <button class="btn-save cyan" id="btn-add-task" onclick="addTask()">PLANIFIER +15 XP</button>
+      </div>
+      <div id="tasks-list"></div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <div class="tab-content" id="tab-scripts">
+      <div class="section-header">MES SCRIPTS D'APPEL</div>
+      <div class="card violet">
+        <div class="card-title">CRÉER UN SCRIPT</div>
+        <input class="input-field" id="script-title" placeholder="Titre (ex: Cold call PME TI)" />
+        <textarea class="input-field" id="script-content" placeholder="Écris ton script ici...&#10;&#10;Bonjour, je suis [nom] de Hilo Tech..."></textarea>
+        <button class="btn-save violet" id="btn-add-script" onclick="addScript()">SAUVEGARDER +50 XP</button>
+      </div>
+      <div id="scripts-list"></div>
+    </div>
+
+    <!-- BADGES -->
+    <div class="tab-content" id="tab-badges">
+      <div class="section-header" id="badges-header">SALLE DES TROPHÉES</div>
+      <div class="badges-grid" id="badges-grid"></div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="dashboard" onclick="switchTab(this,'dashboard')">
+      <span class="nav-icon">⚡</span><span class="nav-label">HQ</span>
+    </button>
+    <button class="nav-btn" data-tab="calls" onclick="switchTab(this,'calls')">
+      <span class="nav-icon">📞</span><span class="nav-label">APPELS</span>
+    </button>
+    <button class="nav-btn" data-tab="calendar" onclick="switchTab(this,'calendar')">
+      <span class="nav-icon">📅</span><span class="nav-label">AGENDA</span>
+    </button>
+    <button class="nav-btn" data-tab="scripts" onclick="switchTab(this,'scripts')">
+      <span class="nav-icon">📝</span><span class="nav-label">SCRIPTS</span>
+    </button>
+    <button class="nav-btn" data-tab="badges" onclick="switchTab(this,'badges')">
+      <span class="nav-icon">🏆</span><span class="nav-label">BADGES</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ══ MODALS ══════════════════════════════════════════ -->
+
+<!-- LOG OBJECTION -->
+<div class="modal-overlay" id="modal-obj">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-obj')">✕</button>
+    <div class="modal-title">TYPE D'APPEL?</div>
+    <div class="objection-list">
+      <button class="obj-btn yes-btn" onclick="logCall('yes',null)">
+        ✅ VENTE FERMÉE <span class="obj-xp">+100 XP 🔥</span>
+      </button>
+      <button class="obj-btn" onclick="logCall('objection','not_interested')">
+        ❌ Pas intéressé <span class="obj-xp">+25 XP</span>
+      </button>
+      <button class="obj-btn" onclick="logCall('objection','too_expensive')">
+        ❌ Trop cher <span class="obj-xp">+25 XP</span>
+      </button>
+      <button class="obj-btn" onclick="logCall('objection','has_provider')">
+        ❌ Déjà un fournisseur <span class="obj-xp">+25 XP</span>
+      </button>
+      <button class="obj-btn" onclick="logCall('objection','bad_timing')">
+        ❌ Pas le bon moment <span class="obj-xp">+25 XP</span>
+      </button>
+      <button class="obj-btn" onclick="logCall('objection','not_decision_maker')">
+        ❌ Pas décideur <span class="obj-xp">+25 XP</span>
+      </button>
+      <button class="obj-btn" onclick="logCall('objection','no_budget')">
+        ❌ Pas de budget <span class="obj-xp">+25 XP</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MOTIVATION -->
+<div class="modal-overlay" id="modal-motiv">
+  <div class="modal-box">
+    <span class="motiv-icon">💪</span>
+    <div class="modal-title" style="text-align:center">TIENS BON, GUERRIER</div>
+    <p class="motiv-msg" id="motiv-text"></p>
+    <button class="btn-back" onclick="closeModal('modal-motiv')">BACK IN THE GAME ⚡</button>
+  </div>
+</div>
+
+<!-- VIEW SCRIPT -->
+<div class="modal-overlay" id="modal-script">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-script')">✕</button>
+    <div class="modal-title" id="modal-script-title"></div>
+    <div class="script-content" id="modal-script-content"></div>
+  </div>
+</div>
+
+<!-- ══ FIREBASE + APP JS ══════════════════════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signInWithPopup, GoogleAuthProvider,
+  signOut, sendEmailVerification, updateProfile
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc,
+  collection, addDoc, query, where, orderBy, getDocs, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── INIT ──────────────────────────────────────────────
+const app   = initializeApp(window.FIREBASE_CONFIG);
+const auth  = getAuth(app);
+const db    = getFirestore(app);
+const gProv = new GoogleAuthProvider();
+
+// ── CONSTANTS ─────────────────────────────────────────
+const LEVELS = [
+  {name:"RECRUE",   min:0,    max:200,  color:"#888888", icon:"🎯"},
+  {name:"CHASSEUR", min:200,  max:600,  color:"#00e5ff", icon:"🏹"},
+  {name:"PRÉDATEUR",min:600,  max:1200, color:"#7c4dff", icon:"⚡"},
+  {name:"APEX",     min:1200, max:2500, color:"#ff6d00", icon:"🔥"},
+  {name:"LÉGENDE",  min:2500, max:99999,color:"#ffd600", icon:"👑"},
+];
+
+const OBJECTION_RESPONSES = {
+  not_interested:[
+    "Un non aujourd'hui, c'est souvent un oui mal informé. Tu as planté une graine. 🌱",
+    "Les plus grandes ventes commencent par un refus. Tu t'en approches. 💪",
+    "Chaque non te rapproche du prochain oui. Continue à avancer.",
+  ],
+  too_expensive:[
+    "Le prix n'est jamais le vrai problème -- c'est la valeur perçue. Travaille ton angle. 💡",
+    "Ils comparent le coût à zéro. Ton job c'est de leur montrer le coût de ne rien faire.",
+    "Un prospect qui parle de prix est encore dans la conversation. C'est bon signe! 🔥",
+  ],
+  has_provider:[
+    "Parfait -- ça veut dire qu'ils ont besoin du service. Tu es à 50% du chemin. ⚡",
+    "Les clients insatisfaits ne le disent pas toujours. Plante la graine, reviens dans 3 mois.",
+    "Tout le monde a un fournisseur jusqu'au jour où il en trouve un meilleur. Sois ce meilleur.",
+  ],
+  bad_timing:[
+    "Il n'y a jamais un bon moment -- sauf quand le problème devient urgent. 📅",
+    "Mauvais timing aujourd'hui = appel planifié demain. Tu as fait du progrès.",
+    "Le moment parfait n'existe pas. Mais ta persistance, elle, ça compte. 💯",
+  ],
+  not_decision_maker:[
+    "C'est une victoire -- tu as trouvé un allié interne potentiel. Demande une intro. 🤝",
+    "Chaque contact est une porte vers le décideur. Continue à cartographier.",
+    "L'influenceur d'aujourd'hui est souvent le décideur de demain.",
+  ],
+  no_budget:[
+    "Pas de budget = pas de priorité. Crée l'urgence qui libère le budget. 💰",
+    "Le budget existe toujours pour ce qui est prioritaire. Travaille sur la douleur.",
+    "Ils n'ont pas de budget jusqu'au jour où ça coûte plus cher de ne rien faire. 🎯",
+  ],
+};
+
+const BADGES = [
+  {id:"first_call",   icon:"📞", name:"Premier Appel",  desc:"Ton tout premier appel",   type:"calls",   threshold:1},
+  {id:"ten_calls",    icon:"🔟", name:"Dix Combats",    desc:"10 appels complétés",       type:"calls",   threshold:10},
+  {id:"hundred_calls",icon:"💯", name:"Centurion",      desc:"100 appels complétés",      type:"calls",   threshold:100},
+  {id:"first_yes",    icon:"✅", name:"Premier Oui",    desc:"Première vente fermée",     type:"closes",  threshold:1},
+  {id:"five_yes",     icon:"🏆", name:"Série Gagnante", desc:"5 ventes fermées",          type:"closes",  threshold:5},
+  {id:"streak_3",     icon:"🔥", name:"En Feu",         desc:"3 jours de streak",         type:"streak",  threshold:3},
+  {id:"streak_7",     icon:"⚡", name:"Inarrêtable",    desc:"7 jours de streak",         type:"streak",  threshold:7},
+  {id:"script_first", icon:"📝", name:"Stratège",       desc:"Premier script créé",       type:"scripts", threshold:1},
+];
+
+const DAILY_QUESTS = [
+  {id:"q1", text:"Faire 5 appels aujourd'hui",    target:5, xp:50,  type:"calls"},
+  {id:"q2", text:"Logger 1 objection",             target:1, xp:30,  type:"objections"},
+  {id:"q3", text:"Planifier 3 tâches",             target:3, xp:40,  type:"tasks"},
+];
+
+// ── STATE ─────────────────────────────────────────────
+let currentUser  = null;
+let userData     = {};
+let callsData    = [];
+let tasksData    = [];
+let scriptsData  = [];
+let authMode     = 'login';
+
+// ── SHOW/HIDE SCREENS ─────────────────────────────────
+function showScreen(id) {
+  document.getElementById('screen-loading').style.display = 'none';
+  ['screen-auth','screen-app'].forEach(s => {
+    const el = document.getElementById(s);
+    el.classList.remove('active');
+    el.style.display = 'none';
+  });
+  const target = document.getElementById(id);
+  target.style.display = 'flex';
+  target.classList.add('active');
+}
+
+// ── AUTH STATE ────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    currentUser = user;
+    await loadAll(user.uid);
+    await updateStreak(user.uid);
+    renderApp();
+    showScreen('screen-app');
+  } else {
+    currentUser = null;
+    showScreen('screen-auth');
+  }
+});
+
+// ── LOAD ALL DATA ─────────────────────────────────────
+async function loadAll(uid) {
+  // User doc
+  const snap = await getDoc(doc(db,'users',uid));
+  if (snap.exists()) {
+    userData = snap.data();
+  } else {
+    userData = {
+      displayName: currentUser.displayName || currentUser.email.split('@')[0],
+      email: currentUser.email,
+      xp:0, streak:0,
+      lastActiveDate: new Date().toDateString(),
+      earnedBadges:[], totalCalls:0, totalCloses:0, totalScripts:0
+    };
+    await setDoc(doc(db,'users',uid), userData);
+  }
+  // Calls
+  try {
+    const q = query(collection(db,'calls'), where('uid','==',uid), orderBy('createdAt','desc'));
+    const s = await getDocs(q);
+    callsData = s.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e) { callsData = []; }
+  // Tasks
+  try {
+    const q = query(collection(db,'tasks'), where('uid','==',uid), orderBy('date','asc'));
+    const s = await getDocs(q);
+    tasksData = s.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e) { tasksData = []; }
+  // Scripts
+  try {
+    const q = query(collection(db,'scripts'), where('uid','==',uid), orderBy('createdAt','desc'));
+    const s = await getDocs(q);
+    scriptsData = s.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e) { scriptsData = []; }
+}
+
+async function updateStreak(uid) {
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+  if (userData.lastActiveDate === today) return;
+  let newStreak = userData.streak || 0;
+  if (userData.lastActiveDate === yesterday) newStreak += 1;
+  else newStreak = 1;
+  userData.streak = newStreak;
+  userData.lastActiveDate = today;
+  await setDoc(doc(db,'users',uid), {streak:newStreak,lastActiveDate:today}, {merge:true});
+}
+
+// ── RENDER APP ────────────────────────────────────────
+function getLevel(xp) {
+  return LEVELS.find(l => xp >= l.min && xp < l.max) || LEVELS[0];
+}
+function getNextLevel(xp) {
+  const idx = LEVELS.findIndex(l => xp >= l.min && xp < l.max);
+  return LEVELS[idx+1] || null;
+}
+
+function renderApp() {
+  const xp     = userData.xp || 0;
+  const streak = userData.streak || 0;
+  const lvl    = getLevel(xp);
+  const next   = getNextLevel(xp);
+  const name   = userData.displayName || 'Guerrier';
+
+  // Header
+  document.getElementById('hdr-level').textContent = `${lvl.icon} ${lvl.name}`;
+  document.getElementById('hdr-level').style.color = lvl.color;
+  document.getElementById('hdr-xp').textContent = `${xp} XP`;
+  document.getElementById('btn-avatar').textContent = name[0].toUpperCase();
+  if (next) {
+    const pct = ((xp - lvl.min) / (next.min - lvl.min)) * 100;
+    document.getElementById('hdr-xpbar').style.width = pct + '%';
+    document.getElementById('hdr-xpbar').style.background = `linear-gradient(90deg, ${lvl.color}88, ${lvl.color})`;
+    document.getElementById('hdr-xpbar').style.boxShadow = `0 0 8px ${lvl.color}`;
+  }
+
+  // Greeting
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'BONNE MATINÉE' : hour < 18 ? 'BON APRÈS-MIDI' : 'BONSOIR';
+  document.getElementById('greeting').innerHTML =
+    `${greet}, <span style="color:var(--cyan)">${name.toUpperCase()}</span>`;
+
+  // Streak
+  document.getElementById('streak-num').textContent = `${streak} JOUR${streak>1?'S':''}`;
+  document.getElementById('streak-msg').textContent =
+    streak >= 7 ? 'Tu es INARRÊTABLE! ⚡' :
+    streak >= 3 ? 'Continue, tu es en feu!' : 'Lance ta série!';
+
+  // Stats
+  const closes = userData.totalCloses || 0;
+  const badges = (userData.earnedBadges||[]).length;
+  document.getElementById('stats-grid').innerHTML = [
+    {label:'Appels',  val: userData.totalCalls||0, color:'var(--cyan)'},
+    {label:'Ventes',  val: closes,                  color:'var(--green)'},
+    {label:'Badges',  val: badges,                  color:'var(--gold)'},
+  ].map(s=>`
+    <div class="stat-card" style="border-color:${s.color}33">
+      <span class="stat-val" style="color:${s.color};text-shadow:0 0 15px ${s.color}66">${s.val}</span>
+      <span class="stat-label">${s.label}</span>
+    </div>
+  `).join('');
+
+  // Quests
+  const today = new Date().toLocaleDateString('fr-CA');
+  const qprog = {
+    calls:      callsData.filter(c=>c.date===today).length,
+    objections: callsData.filter(c=>c.date===today && c.outcome==='objection').length,
+    tasks:      tasksData.filter(t=>t.date===today).length,
+  };
+  document.getElementById('quests-list').innerHTML = DAILY_QUESTS.map(q=>{
+    const prog = qprog[q.type]||0;
+    const done = prog >= q.target;
+    const pct  = Math.min(prog/q.target,1)*100;
+    return `
+      <div class="quest-row">
+        <div class="quest-top">
+          <span class="quest-text" style="color:${done?'var(--green)':'var(--text)'}">
+            ${done?'✅':'⬜'} ${q.text}
+          </span>
+          <span class="quest-xp">+${q.xp} XP</span>
+        </div>
+        <div class="xp-bar-wrap">
+          <div class="xp-bar-fill" style="width:${pct}%;background:${done?'var(--green)':'var(--violet)'};box-shadow:0 0 8px ${done?'var(--green)':'var(--violet)'}"></div>
+        </div>
+        <div class="quest-prog">${prog}/${q.target}</div>
+      </div>
+    `;
+  }).join('');
+
+  renderCalls();
+  renderTasks();
+  renderScripts();
+  renderBadges();
+}
+
+function renderCalls() {
+  const el = document.getElementById('calls-list');
+  if (callsData.length===0) {
+    el.innerHTML = '<div class="empty">Aucun appel encore. Lance-toi! 🚀</div>';
+    return;
+  }
+  el.innerHTML = callsData.map(c=>`
+    <div class="call-item ${c.outcome==='yes'?'yes':'no'}">
+      <div>
+        <span style="margin-right:8px">${c.outcome==='yes'?'✅':'❌'}</span>
+        <span class="call-name" style="color:${c.outcome==='yes'?'var(--green)':'#ff8899'}">
+          ${c.outcome==='yes' ? 'VENTE FERMÉE' : (objLabel(c.objectionKey)||'Non intéressé')}
+        </span>
+      </div>
+      <span class="call-time">${c.date||''} ${c.time||''}</span>
+    </div>
+  `).join('');
+}
+
+function objLabel(key) {
+  const map = {
+    not_interested:'Pas intéressé', too_expensive:'Trop cher',
+    has_provider:'Déjà un fournisseur', bad_timing:'Pas le bon moment',
+    not_decision_maker:'Pas décideur', no_budget:'Pas de budget'
+  };
+  return map[key]||key;
+}
+
+function renderTasks() {
+  const el = document.getElementById('tasks-list');
+  if (tasksData.length===0) {
+    el.innerHTML = '<div class="empty">Aucune tâche planifiée. Organise ta journée!</div>';
+    return;
+  }
+  el.innerHTML = tasksData.map(t=>`
+    <div class="task-item ${t.done?'done':''}">
+      <div style="display:flex;align-items:center;gap:0">
+        <div class="task-checkbox ${t.done?'checked':''}" onclick="toggleTask('${t.id}')">
+          ${t.done?'<span style="color:#04040a;font-size:0.7rem">✓</span>':''}
+        </div>
+        <span class="task-title">${t.title}</span>
+      </div>
+      <div class="task-meta">${t.date||''}<br/>${t.time||''}</div>
+    </div>
+  `).join('');
+}
+
+function renderScripts() {
+  const el = document.getElementById('scripts-list');
+  if (scriptsData.length===0) {
+    el.innerHTML = '<div class="empty">Crée ton premier script et gagne 50 XP! 📝</div>';
+    return;
+  }
+  el.innerHTML = scriptsData.map(s=>`
+    <div class="script-item" onclick="viewScript('${s.id}')">
+      <span class="script-item-title">📝 ${s.title}</span>
+      <span class="script-arrow">VOIR ▶</span>
+    </div>
+  `).join('');
+}
+
+function renderBadges() {
+  const earned = userData.earnedBadges||[];
+  document.getElementById('badges-header').textContent =
+    `SALLE DES TROPHÉES -- ${earned.length}/${BADGES.length}`;
+  document.getElementById('badges-grid').innerHTML = BADGES.map(b=>{
+    const own = earned.includes(b.id);
+    return `
+      <div class="badge-card ${own?'unlocked':'locked'}">
+        <span class="badge-icon">${b.icon}</span>
+        <div class="badge-name">${b.name}</div>
+        <div class="badge-desc">${b.desc}</div>
+        ${own?'<div class="badge-unlocked-tag">DÉBLOQUÉ ✓</div>':''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ── ADD XP ────────────────────────────────────────────
+async function addXP(amount, label) {
+  userData.xp = (userData.xp||0) + amount;
+  await setDoc(doc(db,'users',currentUser.uid), {xp:userData.xp}, {merge:true});
+  showXPPop(label);
+  await checkBadges();
+  renderApp();
+}
+
+function showXPPop(label) {
+  const el = document.createElement('div');
+  el.className = 'xp-popup';
+  el.textContent = label;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 2600);
+}
+
+async function checkBadges() {
+  const earned = userData.earnedBadges||[];
+  const newOnes = [];
+  for (const b of BADGES) {
+    if (earned.includes(b.id)) continue;
+    let val = 0;
+    if (b.type==='calls')   val = userData.totalCalls||0;
+    if (b.type==='closes')  val = userData.totalCloses||0;
+    if (b.type==='streak')  val = userData.streak||0;
+    if (b.type==='scripts') val = userData.totalScripts||0;
+    if (val >= b.threshold) newOnes.push(b.id);
+  }
+  if (newOnes.length>0) {
+    userData.earnedBadges = [...earned, ...newOnes];
+    await setDoc(doc(db,'users',currentUser.uid), {earnedBadges:userData.earnedBadges},{merge:true});
+  }
+}
+
+// ── LOG CALL ──────────────────────────────────────────
+window.logCall = async function(outcome, objKey) {
+  closeModal('modal-obj');
+  const today = new Date().toLocaleDateString('fr-CA');
+  const time  = new Date().toLocaleTimeString('fr-CA',{hour:'2-digit',minute:'2-digit'});
+  const callDoc = {uid:currentUser.uid, outcome, objectionKey:objKey||null, date:today, time, createdAt:serverTimestamp()};
+  const ref = await addDoc(collection(db,'calls'), callDoc);
+  callsData.unshift({id:ref.id,...callDoc});
+  userData.totalCalls = (userData.totalCalls||0)+1;
+  if (outcome==='yes') userData.totalCloses = (userData.totalCloses||0)+1;
+  await setDoc(doc(db,'users',currentUser.uid), {
+    totalCalls:userData.totalCalls, totalCloses:userData.totalCloses
+  },{merge:true});
+  const xpGain = outcome==='yes' ? 100 : 25;
+  const xpLabel = outcome==='yes' ? '+100 XP VENTE FERMÉE! 🔥' : '+25 XP Appel logué';
+  await addXP(xpGain, xpLabel);
+  if (outcome==='objection' && objKey) {
+    const msgs = OBJECTION_RESPONSES[objKey]||[];
+    const msg  = msgs[Math.floor(Math.random()*msgs.length)]||'Continue! 💪';
+    document.getElementById('motiv-text').textContent = msg;
+    document.getElementById('modal-motiv').classList.add('open');
+  }
+};
+
+// ── ADD TASK ──────────────────────────────────────────
+window.addTask = async function() {
+  const title = document.getElementById('task-title').value.trim();
+  const date  = document.getElementById('task-date').value;
+  const time  = document.getElementById('task-time').value;
+  if (!title) return;
+  const btn = document.getElementById('btn-add-task');
+  btn.disabled = true; btn.textContent = '...';
+  const taskDoc = {uid:currentUser.uid, title, date, time, done:false, createdAt:serverTimestamp()};
+  const ref = await addDoc(collection(db,'tasks'), taskDoc);
+  tasksData.push({id:ref.id,...taskDoc});
+  document.getElementById('task-title').value = '';
+  document.getElementById('task-date').value  = '';
+  document.getElementById('task-time').value  = '';
+  await addXP(15, '+15 XP Tâche planifiée');
+  btn.disabled = false; btn.textContent = 'PLANIFIER +15 XP';
+};
+
+window.toggleTask = async function(id) {
+  const task = tasksData.find(t=>t.id===id);
+  if (!task) return;
+  task.done = !task.done;
+  await setDoc(doc(db,'tasks',id),{done:task.done},{merge:true});
+  renderTasks();
+};
+
+// ── ADD SCRIPT ────────────────────────────────────────
+window.addScript = async function() {
+  const title   = document.getElementById('script-title').value.trim();
+  const content = document.getElementById('script-content').value.trim();
+  if (!title || !content) return;
+  const btn = document.getElementById('btn-add-script');
+  btn.disabled = true; btn.textContent = '...';
+  const scriptDoc = {uid:currentUser.uid, title, content, createdAt:serverTimestamp()};
+  const ref = await addDoc(collection(db,'scripts'), scriptDoc);
+  scriptsData.unshift({id:ref.id,...scriptDoc});
+  userData.totalScripts = (userData.totalScripts||0)+1;
+  await setDoc(doc(db,'users',currentUser.uid),{totalScripts:userData.totalScripts},{merge:true});
+  document.getElementById('script-title').value   = '';
+  document.getElementById('script-content').value = '';
+  await addXP(50, '+50 XP Script créé! 📝');
+  btn.disabled = false; btn.textContent = 'SAUVEGARDER +50 XP';
+};
+
+window.viewScript = function(id) {
+  const s = scriptsData.find(x=>x.id===id);
+  if (!s) return;
+  document.getElementById('modal-script-title').textContent = s.title;
+  document.getElementById('modal-script-content').textContent = s.content;
+  document.getElementById('modal-script').classList.add('open');
+};
+
+// ── AUTH ──────────────────────────────────────────────
+function showAuthMsg(msg, type='error') {
+  const el = document.getElementById('auth-msg');
+  el.innerHTML = `<div class="auth-msg ${type}">${msg}</div>`;
+}
+function clearAuthMsg() { document.getElementById('auth-msg').innerHTML=''; }
+
+window.switchAuthTab = function(mode) {
+  authMode = mode;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active', (i===0 && mode==='login')||(i===1 && mode==='register'));
+  });
+  document.getElementById('field-name').style.display = mode==='register' ? 'block' : 'none';
+  document.getElementById('btn-auth').textContent =
+    mode==='register' ? 'CRÉER MON COMPTE' : 'ENTRER DANS L\'ARÈNE';
+  clearAuthMsg();
+};
+
+window.handleAuth = async function() {
+  clearAuthMsg();
+  const email    = document.getElementById('input-email').value.trim();
+  const password = document.getElementById('input-password').value;
+  const name     = document.getElementById('input-name').value.trim();
+  if (!email || !password || (authMode==='register' && !name)) {
+    showAuthMsg('Remplis tous les champs.'); return;
+  }
+  const btn = document.getElementById('btn-auth');
+  btn.disabled=true; btn.textContent='...';
+  try {
+    if (authMode==='register') {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(cred.user, {displayName:name});
+      await sendEmailVerification(cred.user);
+      await setDoc(doc(db,'users',cred.user.uid),{
+        displayName:name, email, xp:0, streak:0,
+        lastActiveDate: new Date().toDateString(),
+        earnedBadges:[], totalCalls:0, totalCloses:0, totalScripts:0
+      });
+      await signOut(auth);
+      showAuthMsg('Compte créé! Vérifie ton courriel avant de te connecter. 📬','success');
+    } else {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      if (!cred.user.emailVerified) {
+        await signOut(auth);
+        showAuthMsg('Vérifie ton courriel avant de te connecter.');
+      }
+    }
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use':'Ce courriel est déjà utilisé.',
+      'auth/wrong-password':'Mot de passe incorrect.',
+      'auth/invalid-credential':'Courriel ou mot de passe incorrect.',
+      'auth/user-not-found':'Aucun compte avec ce courriel.',
+      'auth/weak-password':'Mot de passe trop faible (6 caractères min).',
+      'auth/invalid-email':'Format de courriel invalide.',
+    };
+    showAuthMsg(msgs[e.code]||'Erreur: '+e.message);
+  }
+  btn.disabled=false;
+  btn.textContent = authMode==='register' ? 'CRÉER MON COMPTE' : 'ENTRER DANS L\'ARÈNE';
+};
+
+window.handleGoogle = async function() {
+  clearAuthMsg();
+  try {
+    const cred = await signInWithPopup(auth, gProv);
+    const snap = await getDoc(doc(db,'users',cred.user.uid));
+    if (!snap.exists()) {
+      await setDoc(doc(db,'users',cred.user.uid),{
+        displayName: cred.user.displayName||cred.user.email,
+        email: cred.user.email, xp:0, streak:0,
+        lastActiveDate: new Date().toDateString(),
+        earnedBadges:[], totalCalls:0, totalCloses:0, totalScripts:0
+      });
+    }
+  } catch(e) {
+    showAuthMsg('Erreur Google: '+e.message);
+  }
+};
+
+window.handleLogout = async function() {
+  await signOut(auth);
+};
+
+// ── UI HELPERS ────────────────────────────────────────
+window.openLogModal  = function() { document.getElementById('modal-obj').classList.add('open'); };
+window.openObjModal  = function() { document.getElementById('modal-obj').classList.add('open'); };
+window.closeModal    = function(id) { document.getElementById(id).classList.remove('open'); };
+
+window.switchTab = function(btn, tabId) {
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tabId).classList.add('active');
+};
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay=>{
+  overlay.addEventListener('click', e=>{
+    if (e.target===overlay) overlay.classList.remove('open');
+  });
+});
+
+// ── PARTICLES ────────────────────────────────────────
+const pc = document.getElementById('particles');
+for (let i=0;i<14;i++) {
+  const p = document.createElement('div');
+  p.className='particle';
+  const size = 2+Math.random()*3;
+  p.style.cssText=`
+    width:${size}px;height:${size}px;
+    background:${i%2===0?'#00e5ff':'#7c4dff'};
+    left:${Math.random()*100}%;top:${Math.random()*100}%;
+    animation:${i%2===0?'float':'float2'} ${6+Math.random()*8}s ease-in-out infinite;
+    animation-delay:${Math.random()*5}s;
+  `;
+  pc.appendChild(p);
+}
+</script>
+</body>
+</html>
